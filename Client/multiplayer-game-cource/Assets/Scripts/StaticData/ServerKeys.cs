@@ -10,13 +10,13 @@ namespace Assets.Scripts.StaticData
         public const string VelocityZ = "vZ";
         public const string RotationX = "rX";
         public const string RotationY = "rY";
+        public const string SquattingState = "sq";
+        public const string AngularVelocityX = "aVX";
+        public const string AngularVelocityY = "aVY";
+        public const string AngularVelocityZ = "aVZ";
 
         public const string MoveMessage = "move";
         public const string ShootMessage = "shoot";
         public const string ShootMessageFromServer = "Shoot";
-        public const string GetDownMessage = "g_d";
-        public const string GetDownMessageFromServer = "G_D";
-        public const string GetUpMessage = "g_u";
-        public const string GetUpMessageFromServer = "G_U";
     }
 }

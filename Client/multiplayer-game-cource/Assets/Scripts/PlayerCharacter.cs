@@ -6,6 +6,7 @@ namespace Assets.Scripts
     {
         [SerializeField] private Rigidbody _rb;
         [SerializeField] private JumpComponent _jumper;
+        [SerializeField] private SquatComponent _squat;
         [SerializeField] private Transform _head;
         [SerializeField] private Transform _cameraPoint;
         [SerializeField] private float _minHeadAngleX = -90f;
@@ -31,19 +32,29 @@ namespace Assets.Scripts
             RotateBody();
         }
 
-        public void SetInput(float h, float v, float rotate)
+        public void SetInput(float h, float v, float mouseX)
         {
             _inputH = h;
             _inputV = v;
-            _rotateY += rotate;
+            _rotateY += mouseX;
         }
 
-        public void GetMoveInfo(out Vector3 position, out Vector3 velocity, out float rotateX, out float rotateY)
+        public void GetMoveInfo(out Vector3 position, out Vector3 velocity)
         {
             position = transform.position;
             velocity = _rb.velocity;
-            rotateX = _head.localEulerAngles.x;
-            rotateY = transform.eulerAngles.y;
+        }
+
+        public void GetRotationInfo(out Vector3 angularVelocity, out Vector3 headRotation, out Vector3 bodyRotation)
+        {
+            angularVelocity = _rb.angularVelocity;
+            headRotation = new Vector3(_head.localEulerAngles.x, 0, 0);
+            bodyRotation = new Vector3(0, transform.localEulerAngles.y, 0);
+        }
+
+        public void GetCharacterInfo(out bool squatState)
+        {
+            squatState = _squat.IsSquatting;
         }
 
         public void RotateHead(float value)
@@ -57,12 +68,20 @@ namespace Assets.Scripts
             _jumper.Jump();
         }
 
+        public void Squat(bool state)
+        {
+            _squat.SetSquatState(state);
+        }
+
+        #region Methods
+
         private void Move()
         {
             Vector3 velocity = (transform.forward * _inputV + transform.right * _inputH).normalized * Speed;
 
             velocity.y = _rb.velocity.y;
             _rb.velocity = velocity;
+            
             Velocity = velocity;
         }
 
@@ -70,6 +89,10 @@ namespace Assets.Scripts
         {
             _rb.angularVelocity = new Vector3(0, _rotateY, 0);
             _rotateY = 0;
+
+            AngularVelocity = _rb.angularVelocity;
         }
+        
+        #endregion
     }
 }

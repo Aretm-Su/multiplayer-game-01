@@ -31,30 +31,24 @@ namespace Assets.Scripts
             float mouseY = Input.GetAxis(InputKeys.MouseY) * mouseSensitivity;
 
             bool space = Input.GetKeyDown(KeyCode.Space);
-            bool isSit = Input.GetKey(KeyCode.C);
+            bool isSquatting = Input.GetKey(KeyCode.C);
             bool isShoot = Input.GetMouseButton(0);
 
             _player.SetInput(h, v, mouseX);
             _player.RotateHead(-mouseY);
+            _player.Squat(isSquatting);
 
-            if (space) _player.Jump();
-            
+            if (space)
+            {
+                _player.Jump();
+            }
+
             if (isShoot && _gun.TryShoot(out ShootInfo info))
             {
                 SendShoot(ref info);
             }
 
-            if (isSit && _player.TryGetDown())
-            {
-                SendGetDown();
-            }
-
-            if (!isSit && _player.TryGetUp())
-            {
-                SendGetUp();
-            }
-
-            SendMove();
+            SendPlayerState();
         }
 
         private void SendShoot(ref ShootInfo info)
@@ -65,25 +59,11 @@ namespace Assets.Scripts
             _multiplayerManager.SendMessage(ServerKeys.ShootMessage, json);
         }
 
-        private void SendGetUp()
+        private void SendPlayerState()
         {
-            ClientInfo info = new() { key = _multiplayerManager.GetClientKey() };
-            string json = JsonUtility.ToJson(info);
-            
-            _multiplayerManager.SendMessage(ServerKeys.GetUpMessage, json);
-        }
-
-        private void SendGetDown()
-        {
-            ClientInfo info = new() { key = _multiplayerManager.GetClientKey() };
-            string json = JsonUtility.ToJson(info);
-            
-            _multiplayerManager.SendMessage(ServerKeys.GetDownMessage, json);
-        }
-
-        private void SendMove()
-        {
-            _player.GetMoveInfo(out Vector3 position, out Vector3 velocity, out float rotateX, out float rotateY);
+            _player.GetMoveInfo(out Vector3 position, out Vector3 velocity);
+            _player.GetRotationInfo(out Vector3 angularVelocity, out Vector3 headRotation, out Vector3 bodyRotation);
+            _player.GetCharacterInfo(out bool squatState);
             
             Dictionary<string, object> data = new()
             {
@@ -93,8 +73,10 @@ namespace Assets.Scripts
                 {ServerKeys.VelocityX, velocity.x},
                 {ServerKeys.VelocityY, velocity.y},
                 {ServerKeys.VelocityZ, velocity.z},
-                {ServerKeys.RotationX, rotateX},
-                {ServerKeys.RotationY, rotateY},
+                {ServerKeys.RotationX, headRotation.x},
+                {ServerKeys.RotationY, bodyRotation.y},
+                {ServerKeys.AngularVelocityY, angularVelocity.y},
+                {ServerKeys.SquattingState, squatState},
             };
             
             _multiplayerManager.SendMessage(ServerKeys.MoveMessage, data);

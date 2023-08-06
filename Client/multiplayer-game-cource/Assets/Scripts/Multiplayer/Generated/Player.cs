@@ -36,6 +36,12 @@ namespace Assets.Scripts.Multiplayer.Generated
 
 		[Type(8, "number")]
 		public float rY = default(float);
+
+		[Type(9, "number")]
+		public float aVY = default(float);
+
+		[Type(10, "boolean")]
+		public bool sq = default(bool);
 	}
 }
 

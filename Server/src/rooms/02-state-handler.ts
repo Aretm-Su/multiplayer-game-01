@@ -29,6 +29,12 @@ export class Player extends Schema {
 
     @type("number")
     rY = 0;
+
+    @type("number")
+    aVY = 0;
+
+    @type("boolean")
+    sq = 0;
 }
 
 export class State extends Schema {
@@ -48,7 +54,7 @@ export class State extends Schema {
         this.players.delete(sessionId);
     }
 
-    movePlayer (sessionId: string, data: any) {
+    updatePlayer(sessionId: string, data: any) {
         
         const player = this.players.get(sessionId);
 
@@ -60,6 +66,8 @@ export class State extends Schema {
         player.vZ = data.vZ;
         player.rX = data.rX;
         player.rY = data.rY;
+        player.aVY = data.aVY;
+        player.sq = data.sq;
     }
 }
 
@@ -72,19 +80,11 @@ export class StateHandlerRoom extends Room<State> {
         this.setState(new State());
 
         this.onMessage("move", (client, data) => {
-            this.state.movePlayer(client.sessionId, data);
+            this.state.updatePlayer(client.sessionId, data);
         });
 
         this.onMessage("shoot", (client, data) => {
             this.broadcast("Shoot", data,{ except: client });
-        });
-
-        this.onMessage("g_u", (client, data) => {
-            this.broadcast("G_U", data,{ except: client });
-        });
-
-        this.onMessage("g_d", (client, data) => {
-            this.broadcast("G_D", data,{ except: client });
         });
     }
 

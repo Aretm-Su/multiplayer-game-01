@@ -34,8 +34,6 @@ namespace Assets.Scripts.Multiplayer
             _room = await Instance.client.JoinOrCreate<State>("state_handler", data);
             _room.OnStateChange += StateChangeHandler;
             _room.OnMessage<string>(ServerKeys.ShootMessageFromServer, ShootMessageHandler);
-            _room.OnMessage<string>(ServerKeys.GetDownMessageFromServer, GetDownMessageHandler);
-            _room.OnMessage<string>(ServerKeys.GetUpMessageFromServer, GetUpMessageHandler);
         }
 
         protected override void OnDestroy()
@@ -84,30 +82,6 @@ namespace Assets.Scripts.Multiplayer
             }
             
             _enemies[info.key].Shoot(info);
-        }
-        
-        private void GetDownMessageHandler(string data)
-        {
-            ClientInfo info = JsonUtility.FromJson<ClientInfo>(data);
-            
-            if (_enemies.HasNotKey(info.key))
-            {
-                Debug.LogError($"Нет Enemy с ключем {info.key} ");
-            }
-            
-            _enemies[info.key].GetDown();
-        }
-
-        private void GetUpMessageHandler(string data)
-        {
-            ClientInfo info = JsonUtility.FromJson<ClientInfo>(data);
-            
-            if (_enemies.HasNotKey(info.key))
-            {
-                Debug.LogError($"Нет Enemy с ключем {info.key} ");
-            }
-            
-            _enemies[info.key].GetUp();
         }
 
         private void CreatePlayer(State state)

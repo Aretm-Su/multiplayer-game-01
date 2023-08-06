@@ -15,37 +15,29 @@ namespace Assets.Scripts
         [SerializeField] private EnemyGun _gun;
 
         private readonly List<float> _receiveTimeIntervals = new(5) {0, 0, 0, 0, 0};
-        private float _lastReceiveTime = 0;
+        private float _lastReceiveTime;
         private Player _player;
 
         private float AverageInterval => _receiveTimeIntervals.Sum() / _receiveTimeIntervals.Count;
 
         public void Init(Player player)
         {
+            player.OnChange += OnChange;
+
             _player = player;
             _character.SetSpeed(player.speed);
-            player.OnChange += OnChange;
         }
 
         public void Dispose()
         {
             _player.OnChange -= OnChange;
+
             Destroy(gameObject);
         }
 
         public void Shoot(in ShootInfo info)
         {
             _gun.Shoot(info.ToPosition(), info.ToDirection());
-        }
-
-        public void GetDown()
-        {
-            _character.TryGetDown();
-        }
-
-        public void GetUp()
-        {
-            _character.TryGetUp();
         }
 
         private void SaveReceiveTime()
@@ -57,12 +49,16 @@ namespace Assets.Scripts
             _receiveTimeIntervals.Remove(0);
         }
 
-        public void OnChange(List<DataChange> changes)
+        private void OnChange(List<DataChange> changes)
         {
             SaveReceiveTime();
 
             Vector3 position = transform.position;
             Vector3 velocity = _character.Velocity;
+            Vector3 angularVelocity = _character.AngularVelocity;
+            Vector3 headRotation = Vector3.zero;
+            Vector3 bodyRotation = Vector3.zero;
+            bool squatState = false;
 
             foreach (var dataChange in changes)
             {
@@ -87,10 +83,16 @@ namespace Assets.Scripts
                         velocity.z = (float) dataChange.Value;
                         break;
                     case ServerKeys.RotationX:
-                        _character.SetRotateX((float)dataChange.Value);
+                        headRotation.x = (float) dataChange.Value;
                         break;
                     case ServerKeys.RotationY:
-                        _character.SetRotateY((float) dataChange.Value);
+                        bodyRotation.y = (float) dataChange.Value;
+                        break;
+                    case ServerKeys.AngularVelocityY:
+                        angularVelocity.y = (float) dataChange.Value;
+                        break;
+                    case ServerKeys.SquattingState:
+                        squatState = (bool) dataChange.Value;
                         break;
 
                     default:
@@ -100,6 +102,9 @@ namespace Assets.Scripts
             }
 
             _character.SetMovement(position, velocity, AverageInterval);
+            _character.SetBodyRotation(bodyRotation, angularVelocity, AverageInterval);
+            _character.SetHeadRotation(headRotation);
+            _character.Squat(squatState);
         }
     }
 }

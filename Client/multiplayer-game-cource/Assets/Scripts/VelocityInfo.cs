@@ -6,7 +6,9 @@ namespace Assets.Scripts
     {
         [SerializeField] private Character _character;
 
+        public Vector3 Velocity => _character.Velocity;
         public Vector3 LocalVelocity => GetLocalVelocity();
+        public Vector3 AngularVelocity => _character.AngularVelocity;
         public float NormalizedSpeed => GetNormalizedSpeed();
 
         #region Methods

@@ -5,11 +5,13 @@ namespace Assets.Scripts
     public class EnemyCharacter : Character
     {
         [SerializeField] private Transform _head;
+        [SerializeField] private SquatComponent _squat;
 
-        private Vector3 _targetPosition = Vector3.zero;
+        private Vector3 _targetPosition;
+        private Vector3 _bodyRotation;
+        private Vector3 _headRotation;
         private float _velocityMagnitude;
-        private float _rotationX;
-        private float _rotationY;
+        private float _angularVelocityMagnitude;
 
         private void Start()
         {
@@ -28,22 +30,30 @@ namespace Assets.Scripts
             Speed = value;
         }
 
-        public void SetMovement(in Vector3 position, in Vector3 velocity, in float averageInterval)
+        public void SetMovement(in Vector3 serverPosition, in Vector3 serverVelocity, in float averageInterval)
         {
-            _targetPosition = position + (velocity * averageInterval);
-            _velocityMagnitude = velocity.magnitude;
+            _targetPosition = serverPosition + (serverVelocity * averageInterval);
+            _velocityMagnitude = serverVelocity.magnitude;
 
-            Velocity = velocity;
+            Velocity = serverVelocity;
         }
 
-        public void SetRotateX(float value)
+        public void SetBodyRotation(in Vector3 serverRotation, in Vector3 serverAngularVelocity, in float averageInterval)
         {
-            _rotationX = value;
+            _bodyRotation = serverRotation + (serverAngularVelocity * averageInterval);
+            _angularVelocityMagnitude = serverAngularVelocity.magnitude;
+            
+            AngularVelocity = serverAngularVelocity;
         }
 
-        public void SetRotateY(float value)
+        public void SetHeadRotation(in Vector3 serverRotation)
         {
-            _rotationY = value;
+            _headRotation = serverRotation;
+        }
+
+        public void Squat(bool value)
+        {
+            _squat.SetSquatState(value);
         }
 
         #region Methods
@@ -64,12 +74,15 @@ namespace Assets.Scripts
 
         private void RefreshHeadRotation()
         {
-            _head.localEulerAngles = new Vector3(_rotationX, 0, 0);
+            _head.localEulerAngles = _headRotation;
         }
 
         private void RefreshBodyPosition()
         {
-            transform.localEulerAngles = new Vector3(0, _rotationY, 0);
+            if (_angularVelocityMagnitude > 0.1f)
+            {
+                transform.localEulerAngles = _bodyRotation;
+            }
         }
         
         #endregion
